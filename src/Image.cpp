@@ -77,9 +77,14 @@ void Image::loadImage(std::string path)
             std::cerr<<"Errore apertura file"<<std::endl;
         }
         inputfile.close();
+	std::cout<<"Processo "<<world.rank()<<": Invio matrice,,,"<<std::endl;
+	std::cout.flush();
         world.send(1, 0, immatrix);
     }else{
+	std::cout<<"Processo: "<<world.rank()<<": In attesa di ricezione"<<std::endl;
         world.recv(0, 0, immatrix);
+	std::cout<<"Processo "<<world.rank()<<": Ricezione avvenuta..."<<std::endl;
+	std::cout.flush();
     }
 }
 
@@ -127,9 +132,10 @@ void Image::testPrint()
     {
         for (j = 0; j < altezza; j++)
         {
-            printf("%d %d %d\t",immatrix[i][j].getRed(),immatrix[i][j].getGreen(),immatrix[i][j].getBlue());
+            std::cout<<int(immatrix[i][j].getRed())<<" "<<int(immatrix[i][j].getGreen())<<" "<<int(immatrix[i][j].getBlue())<<"\t";
+	    std::cout.flush();
         }
-        printf("\n");
+        std::cout<<std::endl;
     }
 }
 
