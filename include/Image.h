@@ -17,8 +17,8 @@ class Image
         Image (mpi::communicator world);
         Image (unsigned char newMin, unsigned char newMax, mpi::communicator world);
         void loadImage(std::string path);
-        //int storeImage(std::string path);
-        //void  normalize();
+        int storeImage(std::string path);
+        void  normalize();
         void testPrint();
         virtual ~Image();
     private:
@@ -33,8 +33,10 @@ class Image
         unsigned char maxRed, maxGreen,maxBlue;
         mpi::communicator world;
 
-        //void findMin();
-        //void findMax();
+        void findMin();
+        void findMax();
         void fillMatrix();
+        void receiveMatrix();
+        void printMatrix();
 };
 #endif

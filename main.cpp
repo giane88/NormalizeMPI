@@ -32,6 +32,13 @@ int main (int argc, char *argv[]) {
         im = new Image(world);
     }
     im->loadImage(path);
+    im->normalize();
+    if (world.rank() == 0){
+        unsigned found = path.find_last_of("/");
+        path = path.substr(0,found)+"/normalize.ppm";
+        std::cout<<"Salvataggio dell'immagine in: "<<path<<std::endl;
+    }
+    im->storeImage(path);
     im->testPrint();
     delete im;
 }
