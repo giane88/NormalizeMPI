@@ -105,9 +105,11 @@ void Image::fillMatrix()
     std::string blue;
     int i,j;
 
+    #pragma omp parallel for
     for(i = 0; i < larghezza; i++)
     {
         std::vector<Pixel> temp;
+        #pragma omp parallel for
         for (j = 0; j < altezza; j++)
         {
             getline(inputfile, red);
@@ -158,13 +160,18 @@ void Image::findMin()
 
     std::cout<<"Processo "<<world.rank()<<": Eseguo il ciclo da "<<((world.rank()*larghezza)/world.size())<<" a "<<(((world.rank()+1)*larghezza)/world.size())<<std::endl;
     std::cout.flush();
+    #pragma omp parallel for
     for (i = ((world.rank()*larghezza)/world.size()); i < (((world.rank()+1)*larghezza)/world.size()); i++)
     {
+        #pragma omp parallel for
         for (j = 0; j < altezza; j++)
         {
-            if (immatrix[i][j].getRed() < l_minRed) l_minRed = immatrix[i][j].getRed();
-            if (immatrix[i][j].getGreen() < l_minGreen) l_minGreen = immatrix[i][j].getGreen();
-            if (immatrix[i][j].getBlue() < l_minBlue) l_minBlue = immatrix[i][j].getBlue();
+            #pragma omp parallel
+            {
+                if (immatrix[i][j].getRed() < l_minRed) l_minRed = immatrix[i][j].getRed();
+                if (immatrix[i][j].getGreen() < l_minGreen) l_minGreen = immatrix[i][j].getGreen();
+                if (immatrix[i][j].getBlue() < l_minBlue) l_minBlue = immatrix[i][j].getBlue();
+            }
         }
     }
 
@@ -199,13 +206,18 @@ void Image::findMax()
 
     std::cout<<"Processo "<<world.rank()<<": Eseguo il ciclo da "<<((world.rank()*larghezza)/world.size())<<" a "<<(((world.rank()+1)*larghezza)/world.size())<<std::endl;
     std::cout.flush();
+    #pragma omp parallel for
     for (i = ((world.rank()*larghezza)/world.size()); i < (((world.rank()+1)*larghezza)/world.size()); i++)
     {
+        #pragma omp parallel for
         for (j = 0; j < larghezza; j++)
         {
-            if (immatrix[i][j].getRed() > l_maxRed) l_maxRed = immatrix[i][j].getRed();
-            if (immatrix[i][j].getGreen() > l_maxGreen) l_maxGreen = immatrix[i][j].getGreen();
-            if (immatrix[i][j].getBlue() > l_maxBlue) l_maxBlue = immatrix[i][j].getBlue();
+            #pragma omp parallel
+            {
+                if (immatrix[i][j].getRed() > l_maxRed) l_maxRed = immatrix[i][j].getRed();
+                if (immatrix[i][j].getGreen() > l_maxGreen) l_maxGreen = immatrix[i][j].getGreen();
+                if (immatrix[i][j].getBlue() > l_maxBlue) l_maxBlue = immatrix[i][j].getBlue();
+            }
         }
     }
 
@@ -237,21 +249,26 @@ void Image::normalize()
     findMin();
     findMax();
 
+    #pragma omp parallel for
     for (i = ((world.rank()*larghezza)/world.size()); i < (((world.rank()+1)*larghezza)/world.size()); i++)
     {
+        #pragma omp parallel for
         for (j = 0; j < altezza; j++)
         {
-            if ((maxRed-minRed) != 0)
+            #pragma omp parallel
             {
-                immatrix[i][j].setRed((((immatrix[i][j].getRed() - minRed) * (newMax - newMin))/(maxRed - minRed))+newMin);
-            }
-            if ((maxGreen-minGreen) != 0)
-            {
-                immatrix[i][j].setGreen((((immatrix[i][j].getGreen() - minGreen) * (newMax - newMin))/(maxGreen - minGreen))+newMin);
-            }
-            if ((maxBlue-minBlue) != 0)
-            {
-                immatrix[i][j].setBlue((((immatrix[i][j].getBlue() - minBlue) * (newMax - newMin))/(maxBlue - minBlue))+newMin);
+                if ((maxRed-minRed) != 0)
+                {
+                    immatrix[i][j].setRed((((immatrix[i][j].getRed() - minRed) * (newMax - newMin))/(maxRed - minRed))+newMin);
+                }
+                if ((maxGreen-minGreen) != 0)
+                {
+                    immatrix[i][j].setGreen((((immatrix[i][j].getGreen() - minGreen) * (newMax - newMin))/(maxGreen - minGreen))+newMin);
+                }
+                if ((maxBlue-minBlue) != 0)
+                {
+                    immatrix[i][j].setBlue((((immatrix[i][j].getBlue() - minBlue) * (newMax - newMin))/(maxBlue - minBlue))+newMin);
+                }
             }
         }
     }
@@ -291,6 +308,7 @@ void Image::receiveMatrix()
 
     if (world.rank() != 0)
     {
+        #pragma omp parallel for
         for (i = ((world.rank()*larghezza)/world.size()); i < (((world.rank()+1)*larghezza)/world.size()); i++)
         {
             world.send(0, i, immatrix[i]);
@@ -298,8 +316,10 @@ void Image::receiveMatrix()
     }
     else
     {
+        #pragma omp parallel for
         for (j = 1; j < world.size(); j++)
         {
+            #pragma omp parallel for
             for (i = ((j*larghezza)/world.size()); i < (((j+1)*larghezza)/world.size()); i++)
             {
                 std::vector<Pixel> temp;

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/mpi.hpp>
 #include <vector>
+#include <omp.h>
 #include "Image.h"
 
 namespace mpi=boost::mpi;
