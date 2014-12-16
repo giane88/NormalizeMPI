@@ -7,6 +7,7 @@
 #include <omp.h>
 #include <cstdlib>
 #include <cstdio>
+#include <iomanip>
 #include "Pixel.h"
 
 namespace mpi=boost::mpi;
